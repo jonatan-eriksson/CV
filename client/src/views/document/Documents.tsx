@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import { DocumentService } from "../../api/services/DocumentService";
 import DocumentList from "../../components/document/DocumentList";
 import Sidebar from "../../components/Sidebar";
 
@@ -12,33 +13,8 @@ const Documents = () => {
   }, [])
 
   const fetchDocuments = async () => {
-    setDocuments([
-      {
-        id: 1,
-        name: "Doc1",
-        description: "Desc1",
-        createdAt: Date.now.toString(),
-        modifiedAt: Date.now.toString()
-      },
-      {
-        id: 2,
-        name: "Doc2",
-        description: "Desc2",
-        createdAt: Date.now.toString(),
-        modifiedAt: Date.now.toString()
-      },
-      {
-        id: 3,
-        name: "Doc3",
-        description: "Desc3",
-        createdAt: Date.now.toString(),
-        modifiedAt: Date.now.toString()
-      },
-    ]);
-  }
-
-  const handleClickDocument = (id: string | number) => {
-    console.log(id);
+    const documents = await DocumentService.getDocuments();
+    setDocuments(documents);
   }
 
   return (<>
@@ -49,7 +25,7 @@ const Documents = () => {
             <div>Documents</div>
           </Col>
           <Col className="text-end">
-            <Link className="link-primary text-decoration-none" to="/">
+            <Link className="link-primary text-decoration-none" to="/document/new">
               Add
             </Link>
           </Col>
