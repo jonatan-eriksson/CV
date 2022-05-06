@@ -13,4 +13,3 @@ export const getProperty = <T, K extends keyof T>(obj: T, key: K): T[K] =>
 export const setProperty = <T, K extends keyof T>(obj: T, key: K, value: T[K]) => {
   obj[key] = value;
 }
-  // Object.assign({}, obj, { [key]: value });
