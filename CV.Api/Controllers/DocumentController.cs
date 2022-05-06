@@ -1,8 +1,10 @@
 using CV.Api.Models.DTO;
-using CV.Api.Models.Entity;
 using CV.Api.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using static CV.Api.Models.DTO.GetDocumentResponse;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
 
 namespace CV.Api.Controllers;
 
@@ -114,7 +116,7 @@ public class DocumentController : ControllerBase
     [HttpPost]
     public IActionResult Create([FromBody] CreateDocumentRequest createDocumentRequest)
     {
-        var document = new Document
+        var document = new Models.Entity.Document
         {
             Name = createDocumentRequest.Name,
             FirstName = createDocumentRequest.FirstName,
@@ -123,7 +125,7 @@ public class DocumentController : ControllerBase
             Description = createDocumentRequest.Description,
             Characteristics = createDocumentRequest.Characteristics,
             Languages = createDocumentRequest.Languages,
-            Work = createDocumentRequest.Work.Select(w => new Work
+            Work = createDocumentRequest.Work.Select(w => new Models.Entity.Work
             {
                 Profession = w.Profession,
                 Employer = w.Employer,
@@ -132,7 +134,7 @@ public class DocumentController : ControllerBase
                 Visible = w.Visible,
                 Position = w.Position
             }).ToList(),
-            Projects = createDocumentRequest.Projects.Select(p => new Project
+            Projects = createDocumentRequest.Projects.Select(p => new Models.Entity.Project
             {
                 CustomerName = p.CustomerName,
                 Title = p.Title,
@@ -145,7 +147,7 @@ public class DocumentController : ControllerBase
                 Visible = p.Visible,
                 Position = p.Position
             }).ToList(),
-            Educations = createDocumentRequest.Educations.Select(e => new Education
+            Educations = createDocumentRequest.Educations.Select(e => new Models.Entity.Education
             {
                 School = e.School,
                 Degree = e.Degree,
@@ -154,7 +156,7 @@ public class DocumentController : ControllerBase
                 Visible = e.Visible,
                 Position = e.Position
             }).ToList(),
-            Skills = createDocumentRequest.Skills.Select(s => new Skill
+            Skills = createDocumentRequest.Skills.Select(s => new Models.Entity.Skill
             {
                 Type = s.Type,
                 Text = s.Text,
@@ -184,7 +186,7 @@ public class DocumentController : ControllerBase
         document.Characteristics = updateDocumentRequest.Characteristics;
         document.Languages = updateDocumentRequest.Languages;
 
-        document.Work = updateDocumentRequest.Work.Select(w => new Work
+        document.Work = updateDocumentRequest.Work.Select(w => new Models.Entity.Work
         {
             Id = (int)w.Id,
             Profession = w.Profession,
@@ -195,7 +197,7 @@ public class DocumentController : ControllerBase
             Position = w.Position
         }).ToList();
 
-        document.Projects = updateDocumentRequest.Projects.Select(p => new Project
+        document.Projects = updateDocumentRequest.Projects.Select(p => new Models.Entity.Project
         {
             Id = (int)p.Id,
             CustomerName = p.CustomerName,
@@ -210,7 +212,7 @@ public class DocumentController : ControllerBase
             Position = p.Position
         }).ToList();
 
-        document.Educations = updateDocumentRequest.Educations.Select(e => new Education
+        document.Educations = updateDocumentRequest.Educations.Select(e => new Models.Entity.Education
         {
             Id = (int)e.Id,
             School = e.School,
@@ -221,7 +223,7 @@ public class DocumentController : ControllerBase
             Position = e.Position
         }).ToList();
 
-        document.Skills = updateDocumentRequest.Skills.Select(s => new Skill
+        document.Skills = updateDocumentRequest.Skills.Select(s => new Models.Entity.Skill
         {
             Id = (int)s.Id,
             Type = s.Type,
@@ -246,5 +248,57 @@ public class DocumentController : ControllerBase
         repository.Document.Delete(document);
         repository.Save();
         return Ok();
+    }
+
+    [HttpGet("{id}/download")]
+    public IActionResult Download(int id)
+    {
+        var document = repository.Document.GetById(id);
+
+        if (document == null)
+            return NotFound();
+
+        var stream = new MemoryStream();
+        var font = "sans-serif";
+
+        // pdf template isn't done
+        Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Size(PageSizes.A4);
+                page.Margin(2, Unit.Centimetre);
+                page.PageColor(Colors.White);
+                page.DefaultTextStyle(x => x.FontSize(11).FontFamily(font));
+
+                page.Header().AlignRight().Row(row =>
+                {
+                    row.ConstantItem(100).Height(50).Placeholder();
+                });
+
+                page.Content()
+                    .PaddingVertical(1, Unit.Centimetre)
+                    .Column(col =>
+                    {
+                        col.Item().Text("Curriculum Vitae").FontSize(12).FontColor(Colors.Blue.Darken4);
+
+                        col.Spacing(20);
+
+                        col.Item().Text(document.FirstName + " " + document.LastName);
+
+                        col.Item().Text(document.Description);
+                        col.Item().Text(document.Characteristics);
+                    });
+
+                page.Footer()
+                    .AlignLeft()
+                    .Text("www.dizparc.se").FontSize(8);
+            });
+        })
+       .GeneratePdf(stream);
+
+        stream.Position = 0;
+
+        return File(stream, "application/pdf", "document.pdf");
     }
 }
