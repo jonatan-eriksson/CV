@@ -3,8 +3,6 @@ using CV.Api.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using static CV.Api.Models.DTO.GetDocumentResponse;
 using QuestPDF.Fluent;
-using QuestPDF.Helpers;
-using QuestPDF.Infrastructure;
 
 namespace CV.Api.Controllers;
 
@@ -259,43 +257,12 @@ public class DocumentController : ControllerBase
             return NotFound();
 
         var stream = new MemoryStream();
-        var font = "sans-serif";
 
-        // pdf template isn't done
-        Document.Create(container =>
-        {
-            container.Page(page =>
-            {
-                page.Size(PageSizes.A4);
-                page.Margin(2, Unit.Centimetre);
-                page.PageColor(Colors.White);
-                page.DefaultTextStyle(x => x.FontSize(11).FontFamily(font));
+        var cvDocument = new CvDocument(document);
+        var pdf = Document.Create(cvDocument.Compose);
+        pdf.GeneratePdf(stream);
 
-                page.Header().AlignRight().Row(row =>
-                {
-                    row.ConstantItem(100).Height(50).Placeholder();
-                });
-
-                page.Content()
-                    .PaddingVertical(1, Unit.Centimetre)
-                    .Column(col =>
-                    {
-                        col.Item().Text("Curriculum Vitae").FontSize(12).FontColor(Colors.Blue.Darken4);
-
-                        col.Spacing(20);
-
-                        col.Item().Text(document.FirstName + " " + document.LastName);
-
-                        col.Item().Text(document.Description);
-                        col.Item().Text(document.Characteristics);
-                    });
-
-                page.Footer()
-                    .AlignLeft()
-                    .Text("www.dizparc.se").FontSize(8);
-            });
-        })
-       .GeneratePdf(stream);
+        //pdf.ShowInPreviewer();
 
         stream.Position = 0;
 
