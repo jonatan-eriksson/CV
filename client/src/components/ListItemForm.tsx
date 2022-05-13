@@ -1,5 +1,6 @@
 import { Button, Col, Form, ListGroup, Row } from "react-bootstrap";
 import { ItemType } from "../Enums";
+import { yearMonthNumeric } from "../helpers/General";
 
 type Props = {
   id: number,
@@ -109,11 +110,11 @@ const ProjectForm = ({ id, type, item, onSave, onRemove, onChangeText }: Props) 
       <Row>
         <Form.Group as={Col}>
           <Form.Label>Start date</Form.Label>
-          <Form.Control type="month" name={`${baseName}.startDate`} onChange={onChangeText} value={i?.startDate} />
+          <Form.Control type="month" name={`${baseName}.startDate`} onChange={onChangeText} value={yearMonthNumeric(i?.startDate)} />
         </Form.Group>
         <Form.Group as={Col}>
           <Form.Label>End date</Form.Label>
-          <Form.Control type="month" name={`${baseName}.endDate`} onChange={onChangeText} value={i?.endDate} />
+          <Form.Control type="month" name={`${baseName}.endDate`} onChange={onChangeText} value={yearMonthNumeric(i?.endDate)} />
         </Form.Group>
       </Row>
     </>);

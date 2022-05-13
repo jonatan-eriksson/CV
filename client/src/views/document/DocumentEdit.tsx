@@ -5,7 +5,7 @@ import { DocumentService } from "../../api/services/DocumentService";
 import ListItem from "../../components/ListItem";
 import ListItemForm from "../../components/ListItemForm";
 import { ItemType } from "../../Enums";
-import { getProperty, setProperty } from "../../helpers/General";
+import { dateInputToDate, getProperty, setProperty } from "../../helpers/General";
 
 const defaultDocument: IDocument = {
   id: 0,
@@ -107,9 +107,11 @@ const DocumentEdit = () => {
   }
 
   const onChangeText = (e: any, index?: number) => {
-    const { name, value, type } = e.target;
+    let { name, value, type } = e.target;
 
-    console.log(type)
+    if(type === "month")
+        value = dateInputToDate(value)?.toISOString() || null;
+
     if (name.indexOf('.') > -1) {
       const [parent, child] = name.split('.');
 
