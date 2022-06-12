@@ -130,7 +130,8 @@ public class CvDocument : IDocument
                 col.Spacing(8);
                 if (Document.Work != null && Document.Work?.Count() > 0)
                     foreach (var work in Document.Work)
-                        col.Item().Component(new WorkComponent(work));
+                        if (work.Visible)
+                            col.Item().Component(new WorkComponent(work));
 
             }));
 
@@ -142,7 +143,8 @@ public class CvDocument : IDocument
                 col.Spacing(8);
                 if (Document.Projects != null && Document.Projects?.Count() > 0)
                     foreach (var project in Document.Projects)
-                        col.Item().PaddingHorizontal(5).Component(new ProjectComponent(project));
+                        if (project.Visible)
+                            col.Item().PaddingHorizontal(5).Component(new ProjectComponent(project));
             }));
 
             col.Item().PageBreak();
@@ -153,7 +155,8 @@ public class CvDocument : IDocument
                 col.Spacing(8);
                 if (Document.Educations != null && Document.Educations?.Count() > 0)
                     foreach (var education in Document.Educations)
-                        col.Item().Component(new EducationComponent(education));
+                        if (education.Visible)
+                            col.Item().Component(new EducationComponent(education));
             }));
 
             col.Item().Component(new HeaderComponent("Programvaruteknik", PrimaryHeaderSize, PrimaryHeaderColor, 16, 2));
@@ -162,7 +165,8 @@ public class CvDocument : IDocument
                 col.Spacing(8);
                 if (Document.Skills != null && Document.Skills?.Count() > 0)
                     foreach (var skill in Document.Skills)
-                        col.Item().Component(new SkillComponent(skill));
+                        if (skill.Visible)
+                            col.Item().Component(new SkillComponent(skill));
             }));
 
         });
